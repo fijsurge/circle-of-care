@@ -17,9 +17,13 @@ dist-ssr
 .env.local
 .env.*.local
 
-# Capacitor
-android/
-ios/
+# Capacitor — native build artifacts (android/ and ios/ ARE committed)
+android/.gradle/
+android/app/build/
+android/build/
+android/local.properties
+ios/App/Pods/
+ios/.xcode.env.local
 .capacitor/
 
 # Editor directories and files
