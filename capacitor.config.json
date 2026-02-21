@@ -1,0 +1,13 @@
+{
+  "appId": "com.circleofcare.app",
+  "appName": "Circle of Care",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 0
+    }
+  }
+}
