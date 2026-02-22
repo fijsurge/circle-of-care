@@ -1,3 +1,6 @@
+import { Capacitor } from '@capacitor/core';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
+
 const variants = {
   primary: 'bg-blue-600 hover:bg-blue-700 text-white border-transparent disabled:bg-blue-300',
   secondary: 'bg-white hover:bg-gray-50 text-gray-700 border-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-200 dark:border-gray-600',
@@ -19,12 +22,21 @@ export function Button({
   disabled = false,
   loading = false,
   type = 'button',
+  onClick,
   ...props
 }) {
+  function handleClick(e) {
+    if (Capacitor.isNativePlatform() && (variant === 'primary' || variant === 'danger')) {
+      Haptics.impact({ style: ImpactStyle.Medium });
+    }
+    onClick?.(e);
+  }
+
   return (
     <button
       type={type}
       disabled={disabled || loading}
+      onClick={handleClick}
       className={[
         'inline-flex items-center justify-center gap-2 rounded-lg border font-medium',
         'transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',

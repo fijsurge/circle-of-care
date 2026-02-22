@@ -1,4 +1,6 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { Capacitor } from '@capacitor/core';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { signOut } from '../firebase/auth';
@@ -21,12 +23,21 @@ export function Layout() {
     navigate('/login');
   }
 
+  function handleNavClick() {
+    if (Capacitor.isNativePlatform()) {
+      Haptics.impact({ style: ImpactStyle.Light });
+    }
+  }
+
   const visibleNav = navItems.filter(item => !item.adminOnly || isAdmin);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
       {/* Top header */}
-      <header className="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3">
+      <header
+        className="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3"
+        style={{ paddingTop: 'env(safe-area-inset-top)' }}
+      >
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="text-xl font-bold text-blue-600 dark:text-blue-400">Circle of Care</span>
@@ -79,6 +90,7 @@ export function Layout() {
             <NavLink
               key={item.to}
               to={item.to}
+              onClick={handleNavClick}
               className={({ isActive }) => [
                 'flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
                 isActive
@@ -93,17 +105,21 @@ export function Layout() {
         </aside>
 
         {/* Main content */}
-        <main className="flex-1 p-4 sm:p-6">
+        <main className="flex-1 p-4 sm:p-6 pb-24 md:pb-6">
           <Outlet />
         </main>
       </div>
 
       {/* Bottom nav (mobile, Capacitor-ready) */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex">
+      <nav
+        className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+      >
         {visibleNav.map(item => (
           <NavLink
             key={item.to}
             to={item.to}
+            onClick={handleNavClick}
             className={({ isActive }) => [
               'flex-1 flex flex-col items-center py-2 text-xs gap-1 transition-colors',
               isActive
