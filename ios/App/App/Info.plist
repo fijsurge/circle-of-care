@@ -47,5 +47,17 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+
+	<!-- Location — required by @capacitor/geolocation -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Circle of Care uses your location to alert your care circle if you leave a designated safe area.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Circle of Care uses your location in the background to keep you safe even when the app is not open.</string>
+
+	<!-- Push notifications — required by @capacitor/push-notifications -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
 </dict>
 </plist>

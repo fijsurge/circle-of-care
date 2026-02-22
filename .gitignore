@@ -17,6 +17,9 @@ dist-ssr
 .env.local
 .env.*.local
 
+# Firebase deployment cache
+.firebase/
+
 # Capacitor — native build artifacts (android/ and ios/ ARE committed)
 android/.gradle/
 android/app/build/

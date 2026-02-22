@@ -14,6 +14,9 @@ import { Dashboard } from './pages/dashboard/Dashboard';
 import { InviteMembers } from './pages/admin/InviteMembers';
 import { ActivityLog } from './pages/logs/ActivityLog';
 import { PatientDashboard } from './pages/patient/PatientDashboard';
+import { VillageCalendar } from './pages/calendar/VillageCalendar';
+import { NotificationSettings } from './pages/settings/NotificationSettings';
+import { SafetyMap } from './pages/safety/SafetyMap';
 
 function AppInner() {
   const { isDark } = useTheme();
@@ -52,8 +55,11 @@ function AppInner() {
           element={userDoc?.role === 'patient' ? <Navigate to="/patient" replace /> : <Dashboard />}
         />
         <Route path="/patient" element={<PatientDashboard />} />
+        <Route path="/calendar" element={<VillageCalendar />} />
         <Route path="/logs" element={<ActivityLog />} />
         <Route path="/admin/invite" element={<InviteMembers />} />
+        <Route path="/settings" element={<NotificationSettings />} />
+        <Route path="/safety" element={<SafetyMap />} />
       </Route>
 
       {/* Default redirect */}

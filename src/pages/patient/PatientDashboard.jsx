@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react';
+import { isToday } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { getCircleMembers } from '../../firebase/circles';
 import { subscribeToLogs } from '../../firebase/logs';
+import { subscribeToEvents } from '../../firebase/events';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { LogEntry } from '../../components/LogEntry';
 import { AddLogModal } from '../../components/AddLogModal';
+import { EventCard } from '../../components/EventCard';
+import { useLocationReporter } from '../../hooks/useLocationReporter';
 
 function greeting() {
   const hour = new Date().getHours();
@@ -22,6 +26,7 @@ export function PatientDashboard() {
 
   const [members, setMembers] = useState([]);
   const [recentLogs, setRecentLogs] = useState([]);
+  const [allEvents, setAllEvents] = useState([]);
   const [showModal, setShowModal] = useState(false);
 
   const firstName = userDoc?.displayName?.split(' ')[0] ?? '';
@@ -36,6 +41,19 @@ export function PatientDashboard() {
     const unsub = subscribeToLogs(circleId, setRecentLogs, 5);
     return unsub;
   }, [circleId]);
+
+  useEffect(() => {
+    if (!circleId) return;
+    const unsub = subscribeToEvents(circleId, setAllEvents);
+    return unsub;
+  }, [circleId]);
+
+  const todayEvents = allEvents.filter(
+    (e) => e.eventDate && isToday(e.eventDate.toDate()),
+  ).slice(0, 3);
+
+  // Silently report patient's location every 30 s while the app is open
+  useLocationReporter(circleId);
 
   const caregivers = members.filter(m => m.uid !== firebaseUser?.uid);
 
@@ -78,7 +96,36 @@ export function PatientDashboard() {
         </CardContent>
       </Card>
 
-      {/* Card 2: Recent activity */}
+      {/* Card 2: Today's Events */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Today's Events</CardTitle>
+            <Link
+              to="/calendar"
+              className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+            >
+              View calendar →
+            </Link>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {todayEvents.length === 0 ? (
+            <div className="text-center py-6 text-gray-400 dark:text-gray-500">
+              <p className="text-3xl mb-2">📅</p>
+              <p className="text-sm">No events today</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {todayEvents.map((event) => (
+                <EventCard key={event.id} event={event} circleId={circleId} compact />
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Card 3: Recent activity */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">

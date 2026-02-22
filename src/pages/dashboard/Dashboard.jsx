@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { isToday } from 'date-fns';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
@@ -6,8 +7,10 @@ import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { Link } from 'react-router-dom';
 import { subscribeToLogs } from '../../firebase/logs';
+import { subscribeToEvents } from '../../firebase/events';
 import { LogEntry } from '../../components/LogEntry';
 import { AddLogModal } from '../../components/AddLogModal';
+import { EventCard } from '../../components/EventCard';
 
 export function Dashboard() {
   const { userDoc, currentCircle, isAdmin } = useAuth();
@@ -15,6 +18,7 @@ export function Dashboard() {
   const circleId = currentCircle?.id;
 
   const [recentLogs, setRecentLogs] = useState([]);
+  const [allEvents, setAllEvents] = useState([]);
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
@@ -22,6 +26,16 @@ export function Dashboard() {
     const unsub = subscribeToLogs(circleId, setRecentLogs, 5);
     return unsub;
   }, [circleId]);
+
+  useEffect(() => {
+    if (!circleId) return;
+    const unsub = subscribeToEvents(circleId, setAllEvents);
+    return unsub;
+  }, [circleId]);
+
+  const todayEvents = allEvents.filter(
+    (e) => e.eventDate && isToday(e.eventDate.toDate()),
+  ).slice(0, 3);
 
   const greeting = getGreeting();
 
@@ -92,6 +106,35 @@ export function Dashboard() {
           </Card>
         )}
       </div>
+
+      {/* Today's Events */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Today's Events</CardTitle>
+            <Link
+              to="/calendar"
+              className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+            >
+              View calendar →
+            </Link>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {todayEvents.length === 0 ? (
+            <div className="text-center py-6 text-gray-400 dark:text-gray-500">
+              <p className="text-3xl mb-2">📅</p>
+              <p className="text-sm">No events today</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {todayEvents.map((event) => (
+                <EventCard key={event.id} event={event} circleId={circleId} compact />
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Activity feed */}
       <Card>

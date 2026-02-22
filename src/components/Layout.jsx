@@ -12,8 +12,11 @@ export function Layout() {
   const dashboardTo = userDoc?.role === 'patient' ? '/patient' : '/dashboard';
   const navItems = [
     { to: dashboardTo, label: 'Dashboard', icon: '🏠' },
+    { to: '/calendar', label: 'Calendar', icon: '📅' },
+    { to: '/safety', label: 'Safety', icon: '🛡️' },
     { to: '/logs', label: 'Activity Log', icon: '📋' },
     { to: '/admin/invite', label: 'Invite Members', icon: '✉️', adminOnly: true },
+    { to: '/settings', label: 'Settings', icon: '⚙️' },
   ];
   const { isDark, toggleTheme, isDetailed, toggleComplexity } = useTheme();
   const navigate = useNavigate();
