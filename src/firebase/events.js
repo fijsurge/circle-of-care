@@ -35,7 +35,7 @@ export function subscribeToEvents(circleId, callback) {
     collection(db, 'circles', circleId, 'events'),
     where('eventDate', '>=', Timestamp.fromDate(today)),
     orderBy('eventDate', 'asc'),
-    limit(100),
+    limit(500),
   );
   return onSnapshot(q, (snap) => {
     const events = snap.docs.map((d) => ({ id: d.id, ...d.data() }));

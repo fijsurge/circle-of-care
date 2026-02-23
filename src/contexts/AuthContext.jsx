@@ -6,11 +6,23 @@ import { getCircle } from '../firebase/circles';
 
 const AuthContext = createContext(null);
 
+const DEV_UID = import.meta.env.VITE_DEV_UID;
+
 export function AuthProvider({ children }) {
   const [firebaseUser, setFirebaseUser] = useState(null);
   const [userDoc, setUserDoc] = useState(null);
   const [currentCircle, setCurrentCircle] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const [roleOverride, setRoleOverrideState] = useState(
+    () => sessionStorage.getItem('devRoleOverride') || null,
+  );
+
+  function setRoleOverride(role) {
+    if (role) sessionStorage.setItem('devRoleOverride', role);
+    else sessionStorage.removeItem('devRoleOverride');
+    setRoleOverrideState(role);
+  }
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -51,14 +63,24 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const isDevMode = !!(DEV_UID && firebaseUser?.uid === DEV_UID);
+
+  const effectiveUserDoc = isDevMode && roleOverride
+    ? { ...userDoc, role: roleOverride }
+    : userDoc;
+
   const value = {
     firebaseUser,
-    userDoc,
+    userDoc:         effectiveUserDoc,
     currentCircle,
     loading,
     refreshUser,
-    isAdmin: userDoc?.role === 'admin',
+    isAdmin:         effectiveUserDoc?.role === 'admin',
     isAuthenticated: !!firebaseUser,
+    isDevMode,
+    roleOverride,
+    realRole:        userDoc?.role,
+    setRoleOverride,
   };
 
   return (

@@ -21,6 +21,7 @@ export function AddEventModal({ circleId, onClose }) {
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [notes, setNotes] = useState('');
+  const [location, setLocation] = useState('');
   const [checklistText, setChecklistText] = useState('');
   const [checklistItems, setChecklistItems] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -62,6 +63,7 @@ export function AddEventModal({ circleId, onClose }) {
         eventDate,
         allDay,
         notes: notes.trim() || '',
+        location: location.trim() || null,
         checklist: checklistItems,
       });
       onClose();
@@ -146,6 +148,16 @@ export function AddEventModal({ circleId, onClose }) {
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
               placeholder="Additional details…"
+              className={inputCls}
+            />
+          </Field>
+
+          <Field label="Location (optional)">
+            <input
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="e.g. Dr. Smith's Office, 123 Main St"
               className={inputCls}
             />
           </Field>

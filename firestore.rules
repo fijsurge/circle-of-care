@@ -47,6 +47,25 @@ service cloud.firestore {
           (isMember(circleId) && resource.data.authorId == request.auth.uid);
         allow update: if false;   // logs are immutable
       }
+
+      match /events/{eventId} {
+        allow read: if isMember(circleId);
+        allow create: if isMember(circleId) &&
+          request.resource.data.createdBy == request.auth.uid;
+        allow update: if isMember(circleId);
+        allow delete: if isCircleAdmin(circleId) ||
+          (isMember(circleId) && resource.data.createdBy == request.auth.uid);
+      }
+
+      match /live/{docId} {
+        allow read: if isMember(circleId);
+        allow write: if isMember(circleId);
+      }
+
+      match /busyBlocks/{uid} {
+        allow read: if isMember(circleId);
+        allow write: if isMember(circleId);
+      }
     }
   }
 }

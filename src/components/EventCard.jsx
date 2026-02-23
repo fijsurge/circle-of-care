@@ -101,6 +101,9 @@ export function EventCard({ event, circleId, compact = false }) {
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-gray-900 dark:text-gray-100 truncate">{event.title}</p>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{timeStr}</p>
+          {event.location && (
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">📍 {event.location}</p>
+          )}
         </div>
       </div>
 

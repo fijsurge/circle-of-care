@@ -8,13 +8,14 @@ import { Button } from './ui/Button';
 import { Badge } from './ui/Badge';
 
 export function Layout() {
-  const { userDoc, currentCircle, isAdmin } = useAuth();
+  const { userDoc, currentCircle, isAdmin, roleOverride } = useAuth();
   const dashboardTo = userDoc?.role === 'patient' ? '/patient' : '/dashboard';
   const navItems = [
     { to: dashboardTo, label: 'Dashboard', icon: '🏠' },
     { to: '/calendar', label: 'Calendar', icon: '📅' },
     { to: '/safety', label: 'Safety', icon: '🛡️' },
     { to: '/logs', label: 'Activity Log', icon: '📋' },
+    { to: '/circle', label: 'Members', icon: '👥' },
     { to: '/admin/invite', label: 'Invite Members', icon: '✉️', adminOnly: true },
     { to: '/settings', label: 'Settings', icon: '⚙️' },
   ];
@@ -35,15 +36,19 @@ export function Layout() {
   const visibleNav = navItems.filter(item => !item.adminOnly || isAdmin);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+    <div className={`min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100${roleOverride ? ' pt-7' : ''}`}>
       {/* Top header */}
       <header
-        className="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3"
+        className={`sticky z-10 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 ${roleOverride ? 'top-7' : 'top-0'}`}
         style={{ paddingTop: 'env(safe-area-inset-top)' }}
       >
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-xl font-bold text-blue-600 dark:text-blue-400">Circle of Care</span>
+            <img
+              src="/circle_of_care.png"
+              alt="Circle of Care"
+              className="h-9 w-auto"
+            />
             {currentCircle && (
               <span className="hidden sm:inline text-sm text-gray-500 dark:text-gray-400">
                 — {currentCircle.name}
@@ -88,7 +93,10 @@ export function Layout() {
 
       <div className="max-w-6xl mx-auto flex">
         {/* Sidebar (desktop) */}
-        <aside className="hidden md:flex flex-col w-56 min-h-[calc(100vh-57px)] border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 gap-1">
+        <aside
+          className="hidden md:flex flex-col w-56 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 gap-1"
+          style={{ minHeight: roleOverride ? 'calc(100vh - 85px)' : 'calc(100vh - 57px)' }}
+        >
           {visibleNav.map(item => (
             <NavLink
               key={item.to}

@@ -5,6 +5,7 @@ import {
   getDoc,
   getDocs,
   updateDoc,
+  onSnapshot,
   serverTimestamp,
   Timestamp,
 } from 'firebase/firestore';
@@ -76,6 +77,12 @@ export async function getInvite(circleId, code) {
 export async function getCircleMembers(circleId) {
   const snap = await getDocs(collection(db, 'circles', circleId, 'members'));
   return snap.docs.map(d => ({ uid: d.id, ...d.data() }));
+}
+
+export function subscribeToMembers(circleId, callback) {
+  return onSnapshot(collection(db, 'circles', circleId, 'members'), (snap) => {
+    callback(snap.docs.map((d) => ({ uid: d.id, ...d.data() })));
+  });
 }
 
 export async function acceptInvite(circleId, code, user) {
