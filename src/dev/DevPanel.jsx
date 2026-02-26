@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { seedTestData, clearTestData } from '../firebase/seed';
+import { DemoPlayer } from './DemoPlayer';
 
 const ROLES = [
   { id: 'admin',     label: 'Admin',     active: 'bg-purple-600 text-white', inactive: 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300' },
@@ -21,9 +22,11 @@ export function DevPanel() {
   } = useAuth();
   const navigate = useNavigate();
 
-  const [open,    setOpen]    = useState(false);
-  const [status,  setStatus]  = useState('');
-  const [working, setWorking] = useState(false);
+  const [open,       setOpen]       = useState(false);
+  const [status,     setStatus]     = useState('');
+  const [working,    setWorking]    = useState(false);
+  const [demoActive, setDemoActive] = useState(false);
+  const [recorder,   setRecorder]   = useState(null); // MediaRecorder when recording
 
   // Only render for the designated dev UID
   if (!isDevMode) return null;
@@ -83,10 +86,55 @@ export function DevPanel() {
     }
   }
 
+  async function handleRecord() {
+    if (!navigator.mediaDevices?.getDisplayMedia) {
+      alert('Screen recording is not supported in this browser. Use Chrome or Edge.');
+      return;
+    }
+    let stream;
+    try {
+      stream = await navigator.mediaDevices.getDisplayMedia({
+        video: { frameRate: 30, displaySurface: 'browser' },
+        audio: false,
+      });
+    } catch {
+      // User cancelled the screen-picker — do nothing
+      return;
+    }
+
+    const mimeType = ['video/webm;codecs=vp9', 'video/webm', 'video/mp4']
+      .find((t) => MediaRecorder.isTypeSupported(t)) || '';
+
+    const rec = new MediaRecorder(stream, mimeType ? { mimeType } : {});
+    const chunks = [];
+    rec.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+    rec.onstop = () => {
+      stream.getTracks().forEach((t) => t.stop());
+      const blob = new Blob(chunks, { type: mimeType || 'video/webm' });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url;
+      a.download = 'circle-of-care-demo.webm';
+      a.click();
+      URL.revokeObjectURL(url);
+      setRecorder(null);
+    };
+
+    rec.start();
+    setRecorder(rec);
+    setOpen(false);
+    setDemoActive(true);
+  }
+
+  function handleDemoExit() {
+    recorder?.stop();
+    setDemoActive(false);
+  }
+
   return (
     <>
-      {/* Dev mode banner — visible whenever an override is active */}
-      {roleOverride && (
+      {/* Dev mode banner — hidden during demo/recording so it doesn't appear on video */}
+      {roleOverride && !demoActive && (
         <div className="fixed top-0 left-0 right-0 z-[9999] bg-yellow-400 text-yellow-900 text-xs font-bold text-center py-1 flex items-center justify-center gap-2 select-none">
           DEV MODE — Viewing as {roleOverride.toUpperCase()}
           <button
@@ -98,14 +146,19 @@ export function DevPanel() {
         </div>
       )}
 
-      {/* Floating wrench button */}
-      <button
-        onClick={() => setOpen((o) => !o)}
-        className="fixed bottom-4 right-4 z-[9998] w-10 h-10 rounded-full bg-gray-800 dark:bg-gray-700 text-white shadow-lg flex items-center justify-center text-lg hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors"
-        title="Dev Panel"
-      >
-        🔧
-      </button>
+      {/* Demo player */}
+      {demoActive && <DemoPlayer onExit={handleDemoExit} />}
+
+      {/* Floating wrench button — hidden while demo is running */}
+      {!demoActive && (
+        <button
+          onClick={() => setOpen((o) => !o)}
+          className="fixed bottom-4 right-4 z-[9998] w-10 h-10 rounded-full bg-gray-800 dark:bg-gray-700 text-white shadow-lg flex items-center justify-center text-lg hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors"
+          title="Dev Panel"
+        >
+          🔧
+        </button>
+      )}
 
       {/* Expanded panel */}
       {open && (
@@ -152,6 +205,29 @@ export function DevPanel() {
                 ★ = your real Firestore role
               </p>
             )}
+          </div>
+
+          {/* ── Demo section ── */}
+          <div className="mb-4">
+            <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-2">Guided Demo</p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => { setOpen(false); setDemoActive(true); }}
+                className="flex-1 text-xs bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg py-1.5 font-medium transition-colors"
+              >
+                ▶ Present
+              </button>
+              <button
+                onClick={handleRecord}
+                className="flex-1 text-xs bg-rose-600 hover:bg-rose-700 text-white rounded-lg py-1.5 font-medium transition-colors"
+                title="Record screen while auto-playing — downloads .webm when done"
+              >
+                🔴 Record
+              </button>
+            </div>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5">
+              Present: step manually · Record: auto-plays &amp; saves video
+            </p>
           </div>
 
           {/* ── Test data section ── */}
