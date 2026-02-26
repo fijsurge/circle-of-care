@@ -91,7 +91,7 @@ export function EventCard({ event, circleId, compact = false }) {
   return (
     <div
       className={[
-        'bg-white dark:bg-gray-800 rounded-xl border-l-4 shadow-sm p-4',
+        'bg-white dark:bg-gray-800 rounded-xl border-l-4 ring-1 ring-inset ring-gray-200 dark:ring-gray-700 shadow-sm p-4',
         config.color,
       ].join(' ')}
     >
