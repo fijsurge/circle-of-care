@@ -523,6 +523,65 @@ function generateLogs(now, adminUID, adminName) {
   return logs;
 }
 
+// ── Mock availability (busy blocks) ────────────────────────────────────────
+// Times are relative to "today" so they always show on the calendar regardless
+// of when the seed is run. We store 3 days so there's data across a weekend.
+
+function todayAt(dayOffset, hours, minutes = 0) {
+  const d = new Date();
+  d.setDate(d.getDate() + dayOffset);
+  d.setHours(hours, minutes, 0, 0);
+  return d.toISOString();
+}
+
+const MOCK_BUSY = {
+  _seed_caregiver_mary: {
+    displayName: 'Mary Wilson',
+    blocks: [
+      { start: todayAt(0, 6, 30),  end: todayAt(0, 8,  0)  }, // early prep
+      { start: todayAt(0, 15, 30), end: todayAt(0, 17, 30) }, // afternoon patient
+      { start: todayAt(1, 7,  0),  end: todayAt(1, 9,  0)  },
+      { start: todayAt(1, 14, 0),  end: todayAt(1, 16, 0)  },
+      { start: todayAt(2, 8,  0),  end: todayAt(2, 10, 0)  },
+    ],
+  },
+  _seed_family_emma: {
+    displayName: 'Emma Davis',
+    blocks: [
+      { start: todayAt(0, 9,  0),  end: todayAt(0, 10, 30) }, // team standup
+      { start: todayAt(0, 12, 0),  end: todayAt(0, 13, 0)  }, // lunch meeting
+      { start: todayAt(0, 16, 0),  end: todayAt(0, 17, 30) }, // end-of-day sync
+      { start: todayAt(1, 9,  0),  end: todayAt(1, 12, 0)  }, // packed morning
+      { start: todayAt(2, 10, 0),  end: todayAt(2, 11, 0)  },
+    ],
+  },
+  _seed_family_sarah: {
+    displayName: 'Sarah Johnson',
+    blocks: [
+      { start: todayAt(0, 8,  0),  end: todayAt(0, 12, 0)  }, // work morning
+      { start: todayAt(0, 13, 30), end: todayAt(0, 15, 30) }, // work afternoon
+      { start: todayAt(1, 9,  0),  end: todayAt(1, 17, 0)  }, // full day at office
+      { start: todayAt(2, 8,  30), end: todayAt(2, 12, 0)  },
+    ],
+  },
+  _seed_family_robert: {
+    displayName: 'Robert Johnson',
+    blocks: [
+      { start: todayAt(0, 8,  30), end: todayAt(0, 12, 0)  },
+      { start: todayAt(0, 13, 0),  end: todayAt(0, 17, 0)  }, // full work day
+      { start: todayAt(1, 8,  0),  end: todayAt(1, 16, 30) },
+    ],
+  },
+  _seed_family_thomas: {
+    displayName: 'Thomas Johnson',
+    blocks: [
+      { start: todayAt(0, 10, 0),  end: todayAt(0, 11, 30) }, // doctor appt
+      { start: todayAt(0, 15, 0),  end: todayAt(0, 16, 30) }, // physical therapy
+      { start: todayAt(2, 9,  0),  end: todayAt(2, 10, 30) },
+    ],
+  },
+};
+
 export async function seedTestData(circleId, adminUID, adminName) {
   const joinedAt = Timestamp.fromDate(addDays(new Date(), -91));
 
@@ -553,6 +612,16 @@ export async function seedTestData(circleId, adminUID, adminName) {
     await batch.commit();
   }
 
+  // 4. Mock member availability (busy blocks for Cronofy demo)
+  const busyBatch = writeBatch(db);
+  for (const [uid, data] of Object.entries(MOCK_BUSY)) {
+    busyBatch.set(
+      doc(db, 'circles', circleId, 'busyBlocks', uid),
+      { ...data, _seeded: true },
+    );
+  }
+  await busyBatch.commit();
+
   return { events: events.length, logs: logs.length };
 }
 
@@ -577,7 +646,14 @@ export async function clearTestData(circleId) {
     await batch.commit();
   }
 
-  // 3. Seed member circle records
+  // 3. Mock busy blocks
+  const busyBatch = writeBatch(db);
+  for (const uid of Object.keys(MOCK_BUSY)) {
+    busyBatch.delete(doc(db, 'circles', circleId, 'busyBlocks', uid));
+  }
+  await busyBatch.commit();
+
+  // 4. Seed member circle records
   const memberBatch = writeBatch(db);
   for (const uid of Object.keys(SEED_MEMBERS)) {
     memberBatch.delete(doc(db, 'circles', circleId, 'members', uid));
