@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Tailwind v4: enable class-based dark mode (adds .dark class to <html>) */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
   :root {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
