@@ -527,60 +527,64 @@ function generateLogs(now, adminUID, adminName) {
 // Times are relative to "today" so they always show on the calendar regardless
 // of when the seed is run. We store 3 days so there's data across a weekend.
 
-function todayAt(dayOffset, hours, minutes = 0) {
-  const d = new Date();
-  d.setDate(d.getDate() + dayOffset);
-  d.setHours(hours, minutes, 0, 0);
-  return d.toISOString();
-}
+// Called at seed time so ISO strings are always relative to the actual
+// current day, not to when the module was first loaded by the browser.
+function generateBusyBlocks() {
+  function at(dayOffset, hours, minutes = 0) {
+    const d = new Date();
+    d.setDate(d.getDate() + dayOffset);
+    d.setHours(hours, minutes, 0, 0);
+    return d.toISOString();
+  }
 
-const MOCK_BUSY = {
-  _seed_caregiver_mary: {
-    displayName: 'Mary Wilson',
-    blocks: [
-      { start: todayAt(0, 6, 30),  end: todayAt(0, 8,  0)  }, // early prep
-      { start: todayAt(0, 15, 30), end: todayAt(0, 17, 30) }, // afternoon patient
-      { start: todayAt(1, 7,  0),  end: todayAt(1, 9,  0)  },
-      { start: todayAt(1, 14, 0),  end: todayAt(1, 16, 0)  },
-      { start: todayAt(2, 8,  0),  end: todayAt(2, 10, 0)  },
-    ],
-  },
-  _seed_family_emma: {
-    displayName: 'Emma Davis',
-    blocks: [
-      { start: todayAt(0, 9,  0),  end: todayAt(0, 10, 30) }, // team standup
-      { start: todayAt(0, 12, 0),  end: todayAt(0, 13, 0)  }, // lunch meeting
-      { start: todayAt(0, 16, 0),  end: todayAt(0, 17, 30) }, // end-of-day sync
-      { start: todayAt(1, 9,  0),  end: todayAt(1, 12, 0)  }, // packed morning
-      { start: todayAt(2, 10, 0),  end: todayAt(2, 11, 0)  },
-    ],
-  },
-  _seed_family_sarah: {
-    displayName: 'Sarah Johnson',
-    blocks: [
-      { start: todayAt(0, 8,  0),  end: todayAt(0, 12, 0)  }, // work morning
-      { start: todayAt(0, 13, 30), end: todayAt(0, 15, 30) }, // work afternoon
-      { start: todayAt(1, 9,  0),  end: todayAt(1, 17, 0)  }, // full day at office
-      { start: todayAt(2, 8,  30), end: todayAt(2, 12, 0)  },
-    ],
-  },
-  _seed_family_robert: {
-    displayName: 'Robert Johnson',
-    blocks: [
-      { start: todayAt(0, 8,  30), end: todayAt(0, 12, 0)  },
-      { start: todayAt(0, 13, 0),  end: todayAt(0, 17, 0)  }, // full work day
-      { start: todayAt(1, 8,  0),  end: todayAt(1, 16, 30) },
-    ],
-  },
-  _seed_family_thomas: {
-    displayName: 'Thomas Johnson',
-    blocks: [
-      { start: todayAt(0, 10, 0),  end: todayAt(0, 11, 30) }, // doctor appt
-      { start: todayAt(0, 15, 0),  end: todayAt(0, 16, 30) }, // physical therapy
-      { start: todayAt(2, 9,  0),  end: todayAt(2, 10, 30) },
-    ],
-  },
-};
+  return {
+    _seed_caregiver_mary: {
+      displayName: 'Mary Wilson',
+      blocks: [
+        { start: at(0, 6, 30),  end: at(0, 8,  0)  }, // early prep
+        { start: at(0, 15, 30), end: at(0, 17, 30) }, // afternoon patient
+        { start: at(1, 7,  0),  end: at(1, 9,  0)  },
+        { start: at(1, 14, 0),  end: at(1, 16, 0)  },
+        { start: at(2, 8,  0),  end: at(2, 10, 0)  },
+      ],
+    },
+    _seed_family_emma: {
+      displayName: 'Emma Davis',
+      blocks: [
+        { start: at(0, 9,  0),  end: at(0, 10, 30) }, // team standup
+        { start: at(0, 12, 0),  end: at(0, 13, 0)  }, // lunch meeting
+        { start: at(0, 16, 0),  end: at(0, 17, 30) }, // end-of-day sync
+        { start: at(1, 9,  0),  end: at(1, 12, 0)  }, // packed morning
+        { start: at(2, 10, 0),  end: at(2, 11, 0)  },
+      ],
+    },
+    _seed_family_sarah: {
+      displayName: 'Sarah Johnson',
+      blocks: [
+        { start: at(0, 8,  0),  end: at(0, 12, 0)  }, // work morning
+        { start: at(0, 13, 30), end: at(0, 15, 30) }, // work afternoon
+        { start: at(1, 9,  0),  end: at(1, 17, 0)  }, // full day at office
+        { start: at(2, 8,  30), end: at(2, 12, 0)  },
+      ],
+    },
+    _seed_family_robert: {
+      displayName: 'Robert Johnson',
+      blocks: [
+        { start: at(0, 8,  30), end: at(0, 12, 0)  },
+        { start: at(0, 13, 0),  end: at(0, 17, 0)  }, // full work day
+        { start: at(1, 8,  0),  end: at(1, 16, 30) },
+      ],
+    },
+    _seed_family_thomas: {
+      displayName: 'Thomas Johnson',
+      blocks: [
+        { start: at(0, 10, 0),  end: at(0, 11, 30) }, // doctor appt
+        { start: at(0, 15, 0),  end: at(0, 16, 30) }, // physical therapy
+        { start: at(2, 9,  0),  end: at(2, 10, 30) },
+      ],
+    },
+  };
+}
 
 export async function seedTestData(circleId, adminUID, adminName) {
   const joinedAt = Timestamp.fromDate(addDays(new Date(), -91));
@@ -614,7 +618,7 @@ export async function seedTestData(circleId, adminUID, adminName) {
 
   // 4. Mock member availability (busy blocks for Cronofy demo)
   const busyBatch = writeBatch(db);
-  for (const [uid, data] of Object.entries(MOCK_BUSY)) {
+  for (const [uid, data] of Object.entries(generateBusyBlocks())) {
     busyBatch.set(
       doc(db, 'circles', circleId, 'busyBlocks', uid),
       { ...data, _seeded: true },
@@ -648,7 +652,7 @@ export async function clearTestData(circleId) {
 
   // 3. Mock busy blocks
   const busyBatch = writeBatch(db);
-  for (const uid of Object.keys(MOCK_BUSY)) {
+  for (const uid of Object.keys(generateBusyBlocks())) {
     busyBatch.delete(doc(db, 'circles', circleId, 'busyBlocks', uid));
   }
   await busyBatch.commit();
